@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/* Enable daisyUI */
+@plugin "daisyui";
+
+/* -------------------------------------------------
+   DEFAULT THEMES (keep these)
+-------------------------------------------------- */
+
+@plugin "../vendor/daisyui-theme" {
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: "light";
+}
+
+@plugin "../vendor/daisyui-theme" {
+  name: "dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+}
+
+/* -------------------------------------------------
+                  BATMAN THEME 🦇
+-------------------------------------------------- */
+
+@plugin "../vendor/daisyui-theme" {
+  name: "batman";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  --color-base-100: oklch(18% 0.01 260);
+  --color-base-200: oklch(14% 0.01 260);
+  --color-base-300: oklch(10% 0.01 260);
+  --color-base-content: oklch(96% 0.01 260);
+
+  /* Batman yellow */
+  --color-primary: oklch(85% 0.17 90);
+  --color-primary-content: oklch(12% 0.02 260);
+
+  --color-secondary: oklch(65% 0.12 260);
+  --color-secondary-content: oklch(98% 0.01 260);
+
+  --radius-box: 1rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
+}
+
+/* -------------------------------------------------
+              HELLO KITTY THEME 🎀
+-------------------------------------------------- */
+
+@plugin "../vendor/daisyui-theme" {
+  name: "hello_kitty";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+
+  --color-base-100: oklch(98% 0.01 0);
+  --color-base-200: oklch(96% 0.02 350);
+  --color-base-300: oklch(92% 0.03 350);
+  --color-base-content: oklch(20% 0.02 0);
+
+  /* Pink primary */
+  --color-primary: oklch(75% 0.16 355);
+  --color-primary-content: oklch(15% 0.02 0);
+
+  --color-secondary: oklch(80% 0.09 320);
+  --color-secondary-content: oklch(18% 0.02 0);
+
+  --radius-box: 1.5rem;
+  --radius-field: 1.25rem;
+  --radius-selector: 1.25rem;
+}
+
+html[data-theme="batman"] body {
+  background-image: radial-gradient(60rem 40rem at 20% 10%, rgba(245, 197, 24, .08), transparent 60%),
+    radial-gradient(50rem 30rem at 80% 20%, rgba(255, 255, 255, .04), transparent 55%);
+}
+
+html[data-theme="hello_kitty"] body {
+  background-image: radial-gradient(60rem 40rem at 20% 10%, rgba(255, 105, 180, .16), transparent 60%),
+    radial-gradient(50rem 30rem at 80% 20%, rgba(255, 182, 193, .18), transparent 55%);
+}

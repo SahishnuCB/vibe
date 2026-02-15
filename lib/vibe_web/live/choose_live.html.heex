@@ -1,0 +1,28 @@
+<div class="min-h-screen bg-base-200 text-base-content grid place-items-center p-6">
+  <div class="w-full max-w-md rounded-2xl border border-base-300 bg-base-100/70 p-6">
+    <div class="text-xl font-semibold">vibe</div>
+    <div class="text-sm opacity-70 mt-1">who are you?</div>
+
+    <div class="mt-6 space-y-3">
+      <button
+        data-phx-theme="batman"
+        phx-click={JS.dispatch("phx:set-theme") |> JS.push("pick", value: %{me: "Batman"})}
+        class="btn btn-primary w-full"
+      >
+        Batman
+      </button>
+
+      <button
+        data-phx-theme="hello_kitty"
+        phx-click={JS.dispatch("phx:set-theme") |> JS.push("pick", value: %{me: "Hello Kitty"})}
+        class="btn btn-secondary w-full"
+      >
+        Hello Kitty
+      </button>
+    </div>
+
+    <div class="mt-5 text-xs opacity-60">
+      private room • 2 people • last action wins
+    </div>
+  </div>
+</div>

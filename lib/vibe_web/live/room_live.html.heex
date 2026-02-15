@@ -1,0 +1,183 @@
+<div class="min-h-screen bg-base-200 text-base-content">
+  <div class="mx-auto max-w-7xl p-4">
+    <!-- Top bar -->
+    <div class="mb-4 flex items-center justify-between">
+      <div class={"text-sm opacity-70 tracking-wide #{if @me == "Batman", do: "uppercase", else: ""}"}>
+        vibe — <span class="font-semibold opacity-100"><%= @me %></span>
+      </div>
+
+      <button phx-click="toggle_video" class="btn btn-sm">
+        <%= if @video_visible, do: "Hide video", else: "Show video" %>
+      </button>
+    </div>
+
+    <!-- Two-column layout -->
+    <div class="grid grid-cols-12 gap-4">
+      <!-- Music panel (wider) -->
+      <div class="col-span-7 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-sm">
+        <div class="mb-3 text-sm font-semibold opacity-80">Music</div>
+
+        <!-- Shared width container for search + player -->
+        <div class="max-w-full">
+          <!-- Search -->
+          <form phx-change="search">
+            <input
+              class="input input-bordered w-full h-[42px] rounded-xl"
+              placeholder="Search a song..."
+              name="q"
+              value={@search_q}
+              phx-debounce="350"
+              autocomplete="off"
+            />
+          </form>
+
+          <!-- Player area -->
+          <!-- IMPORTANT: keep yt-root mounted always so iframe keeps playing (audio continues) -->
+          <div
+            id="yt-root"
+            phx-hook="YouTubePlayer"
+            phx-update="ignore"
+            class="mt-3 w-full"
+          >
+            <!-- Hide ONLY the visible video box, not the hook root -->
+            <div id="yt-player-wrap" style={if @video_visible, do: "", else: "display:none;"}>
+              <div
+                id="yt-player"
+                class="w-full h-[260px] rounded-xl border border-base-300 bg-base-200 overflow-hidden"
+              ></div>
+            </div>
+
+            <div class="mt-2 flex gap-2">
+              <button type="button" data-yt="play" class="btn btn-sm btn-primary">
+                Play
+              </button>
+
+              <button type="button" data-yt="pause" class="btn btn-sm">
+                Pause
+              </button>
+
+              <button type="button" data-yt="resync" class="btn btn-sm btn-outline">
+                Resync
+              </button>
+            </div>
+
+            <div class="mt-2 text-xs opacity-60">
+              (If audio doesn’t start, click once inside the page, then press Play.)
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="mt-4 space-y-2 max-h-[360px] overflow-auto pr-1">
+          <%= for r <- @search_results do %>
+            <button
+              phx-click="pick"
+              phx-value-id={r.id}
+              class={[
+                "w-full text-left p-3 rounded-xl border border-base-300 transition",
+                "hover:bg-base-200",
+                if(@selected && @selected.id == r.id, do: "bg-base-200", else: "bg-transparent")
+              ]}
+            >
+              <div class="text-sm font-medium line-clamp-1"><%= r.title %></div>
+              <div class="mt-1 flex items-center gap-2 text-xs opacity-70">
+                <span class="line-clamp-1"><%= r.artist %></span>
+                <span>•</span>
+                <span><%= r.dur %></span>
+              </div>
+            </button>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Chat panel -->
+      <div class="col-span-5 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-sm flex flex-col h-[720px]">
+        <div class="pb-2 border-b border-base-300 flex items-center justify-between">
+          <div class="text-sm font-semibold">Chat</div>
+          <div class="text-xs opacity-60">session only</div>
+        </div>
+
+        <div id="msgs" class="flex-1 overflow-auto py-3 space-y-3" phx-hook="AutoScroll">
+          <%= for m <- @messages do %>
+            <% mine? = m.user == @me %>
+
+            <div class={"flex #{if mine?, do: "justify-end", else: "justify-start"}"}>
+              <div class="max-w-[85%]">
+                <!-- Bubble -->
+                <div
+                  class={[
+                    "rounded-2xl px-3 py-2 text-sm border border-base-300",
+                    if(mine?, do: "bg-primary text-primary-content", else: "bg-base-200")
+                  ]}
+                >
+                  <div class="whitespace-pre-wrap"><%= m.body %></div>
+
+                  <div class="mt-1 text-[11px] opacity-70">
+                    <%= Calendar.strftime(m.at, "%H:%M") %>
+                  </div>
+                </div>
+
+                <!-- Reactions row -->
+                <div class={"mt-1 flex flex-wrap items-center gap-1 #{if mine?, do: "justify-end", else: "justify-start"}"}>
+                  <%= for {emoji, count} <- (m.reactions || %{}) do %>
+                    <button
+                      phx-click="react"
+                      phx-value-msg={m.id}
+                      phx-value-emoji={emoji}
+                      class="btn btn-xs rounded-full"
+                      type="button"
+                      title="React"
+                    >
+                      <span class="mr-1"><%= emoji %></span>
+                      <span class="opacity-80"><%= count %></span>
+                    </button>
+                  <% end %>
+
+                  <button
+                    phx-click="open_reactions"
+                    phx-value-msg={m.id}
+                    class="btn btn-xs btn-outline rounded-full"
+                    type="button"
+                    title="Add reaction"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <!-- Emoji picker (shows only for selected message) -->
+                <%= if @show_reactions_for == m.id do %>
+                  <div class={"mt-1 flex flex-wrap gap-1 #{if mine?, do: "justify-end", else: "justify-start"}"}>
+                    <%= for emoji <- ["👍", "❤️", "😂", "😭", "🔥", "✨", "🦇", "🎀"] do %>
+                      <button
+                        phx-click="react"
+                        phx-value-msg={m.id}
+                        phx-value-emoji={emoji}
+                        class="btn btn-xs rounded-full"
+                        type="button"
+                      >
+                        <%= emoji %>
+                      </button>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <form phx-submit="send" phx-change="draft" class="pt-2 border-t border-base-300 flex gap-2">
+          <input
+            name="draft"
+            value={@draft}
+            class="input input-bordered w-full flex-1 rounded-xl"
+            placeholder="Message…"
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-primary rounded-xl">
+            Send
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
